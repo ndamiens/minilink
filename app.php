@@ -75,6 +75,10 @@ class minilien {
 	 * @brief enregistre un nouveau lien
 	 */
 	public static function nouveau($url) {
+		// url deja existante ?
+		$old = self::byURL($url);
+		if ($old) return $old->id;
+
 		$ele = array("url" => $url, "visites" => 0, "id" => self::nextval());
 		if (!self::links()->insert($ele, array("fsync"=>true))) {
 			throw new Exception("erreur d'enregistrement");
@@ -105,7 +109,20 @@ class minilien {
 		}
 		if (!$rp) throw new Exception('voir plus large...');
 		$l = $rp;
-		return base64_encode(strrev(sprintf("%0{$rp}d", $n)));
+		return self::__id($n);
+	}
+
+	private static function __id($n) {
+		$e = 0;
+		$id = '';
+		$n = (int)$n;
+		while (pow(26,$e)<=$n) $e++;
+		for ($i=$e-1; $i>=0; $i--) {
+			$nf = (int)($n/pow(26,$i));
+			$n -= $nf*pow(26,$i);
+			$id .= chr(97+$nf);
+		}
+		return $id;
 	}
 }
 ?>
